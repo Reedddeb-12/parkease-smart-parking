@@ -12,7 +12,21 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Function to find available port
+const findAvailablePort = (startPort) => {
+  return new Promise((resolve) => {
+    const server = require('net').createServer();
+    server.listen(startPort, () => {
+      const port = server.address().port;
+      server.close(() => resolve(port));
+    });
+    server.on('error', () => {
+      resolve(findAvailablePort(startPort + 1));
+    });
+  });
+};
+
+let PORT = process.env.PORT || 8888;
 
 // Security middleware
 app.use(helmet());
@@ -43,10 +57,7 @@ app.use(express.static('.'));
 // Database connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/parkease', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/parkease');
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error('❌ Database connection error:', error.message);
@@ -55,7 +66,11 @@ const connectDB = async () => {
 };
 
 // Connect to database
-connectDB();
+if (process.env.MONGODB_URI) {
+  connectDB();
+} else {
+  console.log('⚠️  No MongoDB URI provided, running without database');
+}
 
 // Import routes
 const authRoutes = require('./api/routes/auth');
@@ -111,9 +126,25 @@ process.on('SIGTERM', () => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 ParkEase Server running on port ${PORT}`);
-  console.log(`📱 Frontend: http://localhost:${PORT}`);
-  console.log(`🔗 API: http://localhost:${PORT}/api`);
-  console.log(`💾 Database: ${process.env.MONGODB_URI || 'mongodb://localhost:27017/parkease'}`);
-});
+// Start server with automatic port finding
+const startServer = async () => {
+  try {
+    if (!process.env.PORT) {
+      PORT = await findAvailablePort(8888);
+    }
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 ParkEase Server running on port ${PORT}`);
+      console.log(`📱 Frontend: http://localhost:${PORT}`);
+      console.log(`🔗 API: http://localhost:${PORT}/api`);
+      console.log(`💾 Database: ${process.env.MONGODB_URI || 'mongodb://localhost:27017/parkease'}`);
+      console.log(`\n✅ Server started successfully!`);
+      console.log(`\n🌐 Open your browser and go to: http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
