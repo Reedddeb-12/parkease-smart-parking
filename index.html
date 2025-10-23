@@ -89,11 +89,16 @@
                 <button id="demoBtn" class="text-white/80 border border-white/30 px-6 py-2 rounded-full hover:bg-white/10">
                     Try Demo
                 </button>
+                <div class="mt-4 text-white/40 text-xs">v2.0 - Fresh Build</div>
             </div>
         </div>
     </div>
 
     <script>
+    // Log version for debugging
+    console.log('🚀 ParkEase v2.0 - Fresh Build Loaded');
+    console.log('📍 Location:', window.location.href);
+    
     // Simple inline authentication - no external files
     const API_URL = window.location.origin + '/api';
 
@@ -101,7 +106,10 @@
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
         const user = JSON.parse(currentUser);
+        console.log('✅ User already logged in:', user.email);
         window.location.href = user.userType === 'admin' ? 'admin.html' : 'home.html';
+    } else {
+        console.log('👤 No user logged in');
     }
 
     // Form switching
