@@ -41,6 +41,7 @@ app.post('/api/auth/register', async (req, res) => {
     res.json({
       success: true,
       message: 'User registered successfully',
+      token: 'demo-token-' + user._id,
       user: {
         id: user._id,
         name: user.name,
@@ -72,12 +73,49 @@ app.post('/api/auth/login', async (req, res) => {
     res.json({
       success: true,
       message: 'Login successful',
+      token: 'demo-token-' + user._id,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         initials: user.initials,
         userType: user.userType
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+app.post('/api/auth/demo', async (req, res) => {
+  try {
+    // Find or create demo user
+    let demoUser = await User.findOne({ email: 'demo@parkease.com' });
+    
+    if (!demoUser) {
+      demoUser = new User({
+        name: 'Demo User',
+        email: 'demo@parkease.com',
+        password: 'demo123',
+        phone: '+1234567890',
+        userType: 'user'
+      });
+      await demoUser.save();
+    }
+    
+    res.json({
+      success: true,
+      message: 'Demo login successful',
+      token: 'demo-token-' + demoUser._id,
+      user: {
+        id: demoUser._id,
+        name: demoUser.name,
+        email: demoUser.email,
+        initials: demoUser.initials,
+        userType: demoUser.userType
       }
     });
   } catch (error) {
