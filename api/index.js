@@ -13,6 +13,11 @@ let isConnected = false;
 const connectDB = async () => {
   if (isConnected) return;
   
+  if (!process.env.MONGODB_URI) {
+    console.error('❌ MONGODB_URI not found in environment variables');
+    throw new Error('MONGODB_URI is required');
+  }
+  
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
@@ -22,6 +27,7 @@ const connectDB = async () => {
     console.log('✅ MongoDB Connected');
   } catch (error) {
     console.error('❌ MongoDB Error:', error.message);
+    throw error;
   }
 };
 
