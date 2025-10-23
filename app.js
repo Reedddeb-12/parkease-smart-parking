@@ -13,7 +13,12 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+
+// Serve static files from specific directories only
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -230,6 +235,30 @@ app.get('/api/health', (req, res) => {
 // Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/home.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'home.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/profile.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'profile.html'));
+});
+
+app.get('/bookings.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'bookings.html'));
+});
+
+app.get('/parking-details.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'parking-details.html'));
+});
+
+app.get('/booking-confirmation.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'booking-confirmation.html'));
 });
 
 // Start server
