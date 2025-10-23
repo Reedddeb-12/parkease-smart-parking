@@ -1,7 +1,3 @@
-/**
- * Simple ParkEase Server with MongoDB Integration
- */
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,62 +6,31 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// Simple middleware
 app.use(cors());
 app.use(express.json());
-
-// Disable caching for all responses
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-});
-
-// Serve static files from specific directories only (with no caching)
-const staticOptions = {
-  maxAge: 0,
-  etag: false,
-  lastModified: false
-};
-
-app.use('/css', express.static(path.join(__dirname, 'css'), staticOptions));
-app.use('/js', express.static(path.join(__dirname, 'js'), staticOptions));
-app.use('/assets', express.static(path.join(__dirname, 'assets'), staticOptions));
-app.use('/images', express.static(path.join(__dirname, 'images'), staticOptions));
-
-// Prevent serving unwanted directories
-app.use(['/frontend', '/.next', '/node_modules', '/api', '/config', '/models', '/routes', '/middleware'], (req, res) => {
-  res.status(404).send('Not Found');
-});
+app.use(express.static(__dirname));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ MongoDB Connected successfully!');
-  })
-  .catch((error) => {
-    console.log('❌ MongoDB connection failed:', error.message);
-    console.log('⚠️  Running without database...');
-  });
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch((err) => console.log('❌ MongoDB Error:', err.message));
 
-// Import models
+// Models
 const User = require('./api/models/User');
 const ParkingLot = require('./api/models/ParkingLot');
 const Booking = require('./api/models/Booking');
 
-// Simple API routes
+// Auth Routes
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
-    
     const user = new User({ name, email, password, phone });
     await user.save();
     
     res.json({
       success: true,
-      message: 'User registered successfully',
-      token: 'demo-token-' + user._id,
+      token: 'token-' + user._id,
       user: {
         id: user._id,
         name: user.name,
@@ -75,28 +40,76 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
     const user = await User.findOne({ email }).select('+password');
+    
     if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials'
-      });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
     res.json({
       success: true,
-      message: 'Login successful',
+      token: 'token-' + user._id,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        initials: user.initials,
+        userType: user.userType
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/auth/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email, userType: 'admin' }).select('+password');
+    
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+    }
+    
+    res.json({
+      success: true,
+      token: 'admin-token-' + user._id,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        initials: user.initials,
+        userType: user.userType
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/auth/demo', async (req, res) => {
+  try {
+    let user = await User.findOne({ email: 'demo@parkease.com' });
+    
+    if (!user) {
+      user = new User({
+        name: 'Demo User',
+        email: 'demo@parkease.com',
+        password: 'demo123',
+        phone: '+1234567890'
+      });
+      await user.save();
+    }
+    
+    res.json({
+      success: true,
       token: 'demo-token-' + user._id,
       user: {
         id: user._id,
@@ -107,80 +120,17 @@ app.post('/api/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
-app.post('/api/auth/demo', async (req, res) => {
+// Parking Routes
+app.get('/api/parking', async (req, res) => {
   try {
-    // Find or create demo user
-    let demoUser = await User.findOne({ email: 'demo@parkease.com' });
-    
-    if (!demoUser) {
-      demoUser = new User({
-        name: 'Demo User',
-        email: 'demo@parkease.com',
-        password: 'demo123',
-        phone: '+1234567890',
-        userType: 'user'
-      });
-      await demoUser.save();
-    }
-    
-    res.json({
-      success: true,
-      message: 'Demo login successful',
-      token: 'demo-token-' + demoUser._id,
-      user: {
-        id: demoUser._id,
-        name: demoUser.name,
-        email: demoUser.email,
-        initials: demoUser.initials,
-        userType: demoUser.userType
-      }
-    });
+    const lots = await ParkingLot.find({ isActive: true });
+    res.json({ success: true, count: lots.length, data: lots });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
-
-app.post('/api/auth/admin-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Find admin user
-    const adminUser = await User.findOne({ email, userType: 'admin' }).select('+password');
-    
-    if (!adminUser || !(await adminUser.comparePassword(password))) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid admin credentials'
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: 'Admin login successful',
-      token: 'admin-token-' + adminUser._id,
-      user: {
-        id: adminUser._id,
-        name: adminUser.name,
-        email: adminUser.email,
-        initials: adminUser.initials,
-        userType: adminUser.userType
-      }
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
@@ -188,95 +138,55 @@ app.post('/api/parking', async (req, res) => {
   try {
     const { name, address, latitude, longitude, totalSlots, pricePerHour, description } = req.body;
     
-    const parkingLot = new ParkingLot({
+    const lot = new ParkingLot({
       name,
       address,
-      location: {
-        type: 'Point',
-        coordinates: [longitude, latitude]
-      },
+      location: { type: 'Point', coordinates: [longitude, latitude] },
       totalSlots,
       availableSlots: totalSlots,
       pricePerHour,
       description,
-      owner: '507f1f77bcf86cd799439011' // Dummy owner ID for now
+      owner: '507f1f77bcf86cd799439011'
     });
     
-    await parkingLot.save();
-    
-    res.json({
-      success: true,
-      message: 'Parking lot created successfully',
-      data: parkingLot
-    });
+    await lot.save();
+    res.json({ success: true, data: lot });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
-app.get('/api/parking', async (req, res) => {
-  try {
-    const parkingLots = await ParkingLot.find({ isActive: true });
-    
-    res.json({
-      success: true,
-      count: parkingLots.length,
-      data: parkingLots
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
-
+// Booking Routes
 app.post('/api/bookings', async (req, res) => {
   try {
     const { parkingLotId, vehicleName, vehicleNumber, vehicleType, duration } = req.body;
     
-    const parkingLot = await ParkingLot.findById(parkingLotId);
-    if (!parkingLot || parkingLot.availableSlots <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No slots available'
-      });
+    const lot = await ParkingLot.findById(parkingLotId);
+    if (!lot || lot.availableSlots <= 0) {
+      return res.status(400).json({ success: false, message: 'No slots available' });
     }
     
-    const amount = duration * parkingLot.pricePerHour;
+    const amount = duration * lot.pricePerHour;
     
     const booking = new Booking({
-      user: '507f1f77bcf86cd799439011', // Dummy user ID for now
+      user: '507f1f77bcf86cd799439011',
       parkingLot: parkingLotId,
-      vehicle: {
-        name: vehicleName,
-        number: vehicleNumber,
-        type: vehicleType
-      },
+      vehicle: { name: vehicleName, number: vehicleNumber, type: vehicleType },
       duration,
       amount,
       status: 'confirmed'
     });
     
     await booking.save();
-    await parkingLot.bookSlot(amount);
+    await lot.bookSlot(amount);
     
-    res.json({
-      success: true,
-      message: 'Booking created successfully',
-      data: booking
-    });
+    res.json({ success: true, data: booking });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -285,43 +195,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve HTML pages
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/home.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'home.html'));
-});
-
-app.get('/admin.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
-});
-
-app.get('/profile.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'profile.html'));
-});
-
-app.get('/bookings.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'bookings.html'));
-});
-
-app.get('/parking-details.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'parking-details.html'));
-});
-
-app.get('/booking-confirmation.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'booking-confirmation.html'));
-});
-
 // Start server
 const PORT = process.env.PORT || 8888;
-
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 ParkEase Server running on port ${PORT}`);
-  console.log(`📱 Frontend: http://localhost:${PORT}`);
-  console.log(`🔗 API: http://localhost:${PORT}/api`);
-  console.log(`💾 Database: MongoDB Atlas`);
-  console.log(`\n✅ Server started successfully!`);
-  console.log(`\n🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 ParkEase running on port ${PORT}`);
+  console.log(`🌐 http://localhost:${PORT}`);
 });
