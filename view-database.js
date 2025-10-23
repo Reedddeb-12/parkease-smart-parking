@@ -21,7 +21,7 @@ async function viewDatabase() {
         // Get Users
         const users = await User.find({ userType: 'user' });
         const admins = await User.find({ userType: 'admin' });
-        
+
         console.log(`\n👥 USERS (${users.length} total):`);
         console.log('-'.repeat(60));
         if (users.length === 0) {
