@@ -136,6 +136,40 @@ app.post('/api/auth/demo', async (req, res) => {
   }
 });
 
+app.post('/api/auth/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find admin user
+    const adminUser = await User.findOne({ email, userType: 'admin' }).select('+password');
+    
+    if (!adminUser || !(await adminUser.comparePassword(password))) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid admin credentials'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Admin login successful',
+      token: 'admin-token-' + adminUser._id,
+      user: {
+        id: adminUser._id,
+        name: adminUser.name,
+        email: adminUser.email,
+        initials: adminUser.initials,
+        userType: adminUser.userType
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 app.post('/api/parking', async (req, res) => {
   try {
     const { name, address, latitude, longitude, totalSlots, pricePerHour, description } = req.body;

@@ -19,7 +19,9 @@ async function viewDatabase() {
         console.log('='.repeat(60));
 
         // Get Users
-        const users = await User.find({});
+        const users = await User.find({ userType: 'user' });
+        const admins = await User.find({ userType: 'admin' });
+        
         console.log(`\n👥 USERS (${users.length} total):`);
         console.log('-'.repeat(60));
         if (users.length === 0) {
@@ -31,6 +33,20 @@ async function viewDatabase() {
                 console.log(`     Phone: ${user.phone || 'N/A'}`);
                 console.log(`     Type: ${user.userType}`);
                 console.log(`     Joined: ${user.createdAt.toLocaleDateString()}`);
+            });
+        }
+
+        console.log(`\n\n👨‍💼 ADMINS (${admins.length} total):`);
+        console.log('-'.repeat(60));
+        if (admins.length === 0) {
+            console.log('  No admins found');
+        } else {
+            admins.forEach((admin, index) => {
+                console.log(`\n  ${index + 1}. ${admin.name}`);
+                console.log(`     Email: ${admin.email}`);
+                console.log(`     Phone: ${admin.phone || 'N/A'}`);
+                console.log(`     Type: ${admin.userType}`);
+                console.log(`     Joined: ${admin.createdAt.toLocaleDateString()}`);
             });
         }
 
@@ -73,6 +89,7 @@ async function viewDatabase() {
         console.log('\n' + '='.repeat(60));
         console.log('📊 SUMMARY:');
         console.log(`   Total Users: ${users.length}`);
+        console.log(`   Total Admins: ${admins.length}`);
         console.log(`   Total Parking Lots: ${parkingLots.length}`);
         console.log(`   Total Bookings: ${bookings.length}`);
         console.log('='.repeat(60) + '\n');

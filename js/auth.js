@@ -109,28 +109,39 @@ async function handleRegister(e) {
     }
 }
 
-function handleAdminLogin(e) {
+async function handleAdminLogin(e) {
     e.preventDefault();
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
 
-    // Simple admin validation
-    if ((email.includes('admin') || email === 'admin@parkease.com') && 
-        (password === 'admin123' || password === 'admin')) {
-        const user = {
-            name: 'Admin',
-            email: email,
-            initials: 'A',
-            userType: 'admin'
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        showSuccess('Admin login successful!');
-        setTimeout(() => {
-            window.location.href = 'admin.html';
-        }, 1000);
-    } else {
-        showError('Invalid admin credentials');
+    if (email && password) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/admin-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store token and user data
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                
+                showSuccess('Admin login successful!');
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+            } else {
+                showError(data.message || 'Invalid admin credentials');
+            }
+        } catch (error) {
+            console.error('Admin login error:', error);
+            showError('Network error. Please try again.');
+        }
     }
 }
 
