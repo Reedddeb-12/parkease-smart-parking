@@ -20,6 +20,11 @@ app.use('/js', express.static(path.join(__dirname, 'js')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+// Prevent serving unwanted directories
+app.use(['/frontend', '/.next', '/node_modules', '/api', '/config', '/models', '/routes', '/middleware'], (req, res) => {
+  res.status(404).send('Not Found');
+});
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
