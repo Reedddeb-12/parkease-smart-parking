@@ -207,6 +207,15 @@ function showNotification(message, type = 'success') {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Signal that JavaScript is working
+    const jsStatus = document.getElementById('jsStatus');
+    if (jsStatus) {
+        jsStatus.textContent = '✅ JavaScript Loaded';
+        jsStatus.style.color = '#10b981';
+    }
+    
+    console.log('✅ ParkEase Auth.js loaded successfully');
+    
     // Form switching
     document.getElementById('showRegisterBtn').addEventListener('click', showRegisterForm);
     document.getElementById('adminLoginBtn').addEventListener('click', showAdminForm);
