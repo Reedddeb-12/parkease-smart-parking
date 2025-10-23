@@ -31,29 +31,47 @@ function showUserLoginForm() {
     document.getElementById('userLoginForm').classList.remove('hidden');
 }
 
+// API Base URL
+const API_BASE_URL = window.location.origin;
+
 // Authentication functions
-function handleUserLogin(e) {
+async function handleUserLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
     if (email && password) {
-        const user = {
-            name: email.split('@')[0],
-            email: email,
-            initials: email.charAt(0).toUpperCase(),
-            userType: 'user'
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        showSuccess('Login successful!');
-        setTimeout(() => {
-            window.location.href = 'home.html';
-        }, 1000);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store token and user data
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                
+                showSuccess('Login successful!');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000);
+            } else {
+                showError(data.message || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showError('Network error. Please try again.');
+        }
     }
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
@@ -61,19 +79,33 @@ function handleRegister(e) {
     const phone = document.getElementById('regPhone').value;
 
     if (name && email && password && phone) {
-        const user = {
-            name: name,
-            email: email,
-            phone: phone,
-            initials: name.charAt(0).toUpperCase(),
-            userType: 'user'
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        showSuccess('Account created successfully!');
-        setTimeout(() => {
-            window.location.href = 'home.html';
-        }, 1000);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, password, phone })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store token and user data
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                
+                showSuccess('Account created successfully!');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1000);
+            } else {
+                showError(data.message || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            showError('Network error. Please try again.');
+        }
     }
 }
 
@@ -102,19 +134,33 @@ function handleAdminLogin(e) {
     }
 }
 
-function handleDemo() {
-    const user = {
-        name: 'Demo User',
-        email: 'demo@parkease.com',
-        initials: 'D',
-        userType: 'user'
-    };
-    
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    showSuccess('Welcome to ParkEase Demo!');
-    setTimeout(() => {
-        window.location.href = 'home.html';
-    }, 1000);
+async function handleDemo() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/demo`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store token and user data
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            
+            showSuccess('Welcome to ParkEase Demo!');
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 1000);
+        } else {
+            showError(data.message || 'Demo login failed');
+        }
+    } catch (error) {
+        console.error('Demo login error:', error);
+        showError('Network error. Please try again.');
+    }
 }
 
 // Notification system
