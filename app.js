@@ -232,35 +232,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Find available port and start server
-const startServer = async () => {
-  const ports = [8888, 3333, 5555, 7890, 9090, 4444];
-  
-  for (const port of ports) {
-    try {
-      await new Promise((resolve, reject) => {
-        const server = app.listen(port, () => {
-          console.log(`🚀 ParkEase Server running on port ${port}`);
-          console.log(`📱 Frontend: http://localhost:${port}`);
-          console.log(`🔗 API: http://localhost:${port}/api`);
-          console.log(`💾 Database: MongoDB Atlas`);
-          console.log(`\n✅ Server started successfully!`);
-          console.log(`\n🌐 Open your browser: http://localhost:${port}`);
-          resolve();
-        });
-        
-        server.on('error', (err) => {
-          if (err.code === 'EADDRINUSE') {
-            reject(err);
-          }
-        });
-      });
-      break; // If we get here, server started successfully
-    } catch (error) {
-      console.log(`Port ${port} is in use, trying next...`);
-      continue;
-    }
-  }
-};
+// Start server
+const PORT = process.env.PORT || 8888;
 
-startServer();
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 ParkEase Server running on port ${PORT}`);
+  console.log(`📱 Frontend: http://localhost:${PORT}`);
+  console.log(`🔗 API: http://localhost:${PORT}/api`);
+  console.log(`💾 Database: MongoDB Atlas`);
+  console.log(`\n✅ Server started successfully!`);
+  console.log(`\n🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
