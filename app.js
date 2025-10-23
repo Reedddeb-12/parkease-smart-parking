@@ -14,11 +14,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from specific directories only
-app.use('/css', express.static(path.join(__dirname, 'css')));
-app.use('/js', express.static(path.join(__dirname, 'js')));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
+// Disable caching for all responses
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+// Serve static files from specific directories only (with no caching)
+const staticOptions = {
+  maxAge: 0,
+  etag: false,
+  lastModified: false
+};
+
+app.use('/css', express.static(path.join(__dirname, 'css'), staticOptions));
+app.use('/js', express.static(path.join(__dirname, 'js'), staticOptions));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), staticOptions));
+app.use('/images', express.static(path.join(__dirname, 'images'), staticOptions));
 
 // Prevent serving unwanted directories
 app.use(['/frontend', '/.next', '/node_modules', '/api', '/config', '/models', '/routes', '/middleware'], (req, res) => {
