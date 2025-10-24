@@ -32,16 +32,65 @@
                 </div>
 
                 <div class="glass rounded-3xl p-8">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Sign In</h3>
-                    <form id="loginForm" class="space-y-4">
-                        <input type="email" id="loginEmail" placeholder="Email" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <input type="password" id="loginPassword" placeholder="Password" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
-                            Sign In
-                        </button>
-                    </form>
+                    <!-- User Login Form -->
+                    <div id="userLoginForm">
+                        <h3 class="text-xl font-semibold text-white mb-6 text-center">Sign In</h3>
+                        <form id="loginForm" class="space-y-4">
+                            <input type="email" id="loginEmail" placeholder="Email" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="password" id="loginPassword" placeholder="Password" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
+                                Sign In
+                            </button>
+                        </form>
+                        <div class="mt-6 text-center space-y-2">
+                            <button onclick="showRegister()" class="text-white/80 hover:text-white">Create Account</button>
+                            <span class="text-white/50 mx-2">|</span>
+                            <button onclick="showAdmin()" class="text-white/80 hover:text-white">Admin Login</button>
+                        </div>
+                    </div>
+
+                    <!-- Register Form -->
+                    <div id="registerForm" class="hidden">
+                        <h3 class="text-xl font-semibold text-white mb-6 text-center">Create Account</h3>
+                        <form id="regForm" class="space-y-4">
+                            <input type="text" id="regName" placeholder="Full Name" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="email" id="regEmail" placeholder="Email" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="password" id="regPassword" placeholder="Password" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="tel" id="regPhone" placeholder="Phone Number" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
+                                Create Account
+                            </button>
+                        </form>
+                        <div class="mt-4 text-center">
+                            <button onclick="showLogin()" class="text-white/80 hover:text-white">← Back to Login</button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Login Form -->
+                    <div id="adminForm" class="hidden">
+                        <h3 class="text-xl font-semibold text-white mb-6 text-center">Admin Login</h3>
+                        <form id="adminLoginForm" class="space-y-4">
+                            <input type="email" id="adminEmail" placeholder="Admin Email" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="password" id="adminPassword" placeholder="Admin Password" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
+                                Admin Sign In
+                            </button>
+                        </form>
+                        <div class="mt-4 text-center">
+                            <button onclick="showLogin()" class="text-white/80 hover:text-white">← Back to User Login</button>
+                            <div class="mt-3 p-3 glass rounded-xl">
+                                <p class="text-white/80 text-xs">Demo: admin@parkease.com / admin123</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-8 text-center">
@@ -53,10 +102,9 @@
         </div>
     </div>
 
-    <!-- Home Page -->
+    <!-- User Home Page -->
     <div id="homePage" class="page">
         <div class="min-h-screen bg-gray-50">
-            <!-- Header -->
             <header class="bg-white shadow-sm">
                 <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 class="text-2xl font-bold text-blue-600">ParkEase</h1>
@@ -69,7 +117,6 @@
                 </div>
             </header>
 
-            <!-- Main Content -->
             <main class="max-w-7xl mx-auto px-4 py-8">
                 <div class="bg-white rounded-lg shadow-lg p-8">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome to ParkEase!</h2>
@@ -99,6 +146,53 @@
         </div>
     </div>
 
+    <!-- Admin Dashboard Page -->
+    <div id="adminPage" class="page">
+        <div class="min-h-screen bg-gray-50">
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">ParkEase Admin</h1>
+                    <div class="flex items-center gap-4">
+                        <span id="adminName" class="text-gray-700"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Total Users</h3>
+                            <p class="text-3xl font-bold text-gray-800">3</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-green-600 mb-2">Parking Lots</h3>
+                            <p class="text-3xl font-bold text-gray-800">0</p>
+                        </div>
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-purple-600 mb-2">Bookings</h3>
+                            <p class="text-3xl font-bold text-gray-800">0</p>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-yellow-600 mb-2">Revenue</h3>
+                            <p class="text-3xl font-bold text-gray-800">₹0</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
+                        <h3 class="text-2xl font-bold mb-2">👨‍💼 Admin Access Granted</h3>
+                        <p class="text-lg">You have full control over the ParkEase system.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.origin + '/api';
         let currentUser = null;
@@ -108,8 +202,13 @@
             const user = localStorage.getItem('currentUser');
             if (user) {
                 currentUser = JSON.parse(user);
-                showPage('homePage');
-                document.getElementById('userName').textContent = currentUser.name;
+                if (currentUser.userType === 'admin') {
+                    showPage('adminPage');
+                    document.getElementById('adminName').textContent = currentUser.name;
+                } else {
+                    showPage('homePage');
+                    document.getElementById('userName').textContent = currentUser.name;
+                }
             }
         }
 
@@ -119,7 +218,26 @@
             document.getElementById(pageId).classList.add('active');
         }
 
-        // Login
+        // Form switching
+        function showLogin() {
+            document.getElementById('userLoginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('adminForm').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('userLoginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('adminForm').classList.add('hidden');
+        }
+
+        function showAdmin() {
+            document.getElementById('userLoginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('adminForm').classList.remove('hidden');
+        }
+
+        // User Login
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -141,6 +259,64 @@
                     showPage('homePage');
                 } else {
                     alert(data.message || 'Login failed');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
+            }
+        };
+
+        // User Registration
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const phone = document.getElementById('regPhone').value;
+
+            try {
+                const res = await fetch(API_URL + '/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, phone })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    document.getElementById('userName').textContent = currentUser.name;
+                    showPage('homePage');
+                } else {
+                    alert(data.message || 'Registration failed');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
+            }
+        };
+
+        // Admin Login
+        document.getElementById('adminLoginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            try {
+                const res = await fetch(API_URL + '/auth/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    document.getElementById('adminName').textContent = currentUser.name;
+                    showPage('adminPage');
+                } else {
+                    alert(data.message || 'Invalid admin credentials');
                 }
             } catch (err) {
                 alert('Network error. Please try again.');
@@ -176,6 +352,7 @@
             localStorage.removeItem('currentUser');
             currentUser = null;
             showPage('loginPage');
+            showLogin();
         }
 
         // Initialize
