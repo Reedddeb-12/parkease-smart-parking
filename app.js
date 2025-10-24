@@ -12,9 +12,16 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => console.log('❌ MongoDB Error:', err.message));
+if (!process.env.MONGODB_URI) {
+  console.log('⚠️  WARNING: MONGODB_URI not set. Running without database.');
+} else {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch((err) => {
+      console.log('❌ MongoDB Error:', err.message);
+      console.log('⚠️  Server will continue without database');
+    });
+}
 
 // Models
 const User = require('./api/models/User');
@@ -227,7 +234,20 @@ app.get('/api/health', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 8888;
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 ParkEase running on port ${PORT}`);
-  console.log(`🌐 http://localhost:${PORT}`);
+  console.log('='.repeat(50));
+  console.log('🚀 ParkEase Server Started Successfully!');
+  console.log('='.repeat(50));
+  console.log(`📍 Port: ${PORT}`);
+  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log(`💾 MongoDB: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
+  console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Set' : 'Not set'}`);
+  console.log('='.repeat(50));
+}).on('error', (err) => {
+  console.error('❌ Server Error:', err.message);
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
 });
