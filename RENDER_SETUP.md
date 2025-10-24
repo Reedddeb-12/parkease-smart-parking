@@ -26,17 +26,22 @@
 **Instance Type:**
 - Select **Free** tier
 
-## Step 5: Add Environment Variables
+## Step 5: Add Environment Variables ⚠️ IMPORTANT!
 
 Click **"Advanced"** and add these 2 variables:
 
-### Variable 1:
+### Variable 1: MONGODB_URI (Your Database)
 ```
 Key: MONGODB_URI
 Value: mongodb+srv://reeddhijitdeb_db_user:Reeddhijit_12@cluster0.7i6abub.mongodb.net/parkease?retryWrites=true&w=majority&appName=Cluster0
 ```
 
-### Variable 2:
+**This connects to your existing MongoDB Atlas database with:**
+- ✅ 3 Users (including Demo User)
+- ✅ 1 Admin (admin@parkease.com)
+- ✅ All your existing data
+
+### Variable 2: JWT_SECRET
 ```
 Key: JWT_SECRET
 Value: parkease-super-secret-jwt-key-2024-production-ready
@@ -74,6 +79,25 @@ Your site will be at: `https://parkease-smart-parking.onrender.com`
 - **Free tier sleeps after 15 min** - First load takes 30-60 seconds
 - **Keep MongoDB Atlas IP whitelist** set to 0.0.0.0/0
 - **Check logs** in Render dashboard if issues occur
+
+## 💾 Your MongoDB Database:
+
+**Already Connected & Working:**
+- ✅ Database Name: `parkease`
+- ✅ 3 Users registered
+- ✅ 1 Admin account (admin@parkease.com / admin123)
+- ✅ Demo User available (click "Try Demo")
+
+**Your Data:**
+- Users: 3 total
+- Admins: 1 total
+- Parking Lots: 0 (add via admin dashboard)
+- Bookings: 0 (will be created when users book)
+
+**MongoDB Atlas Setup:**
+1. Go to https://cloud.mongodb.com
+2. Network Access → Add IP: **0.0.0.0/0** (Allow from anywhere)
+3. This allows Render to connect to your database
 
 ---
 
