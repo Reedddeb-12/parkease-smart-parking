@@ -6,6 +6,8 @@
     <title>ParkEase - Smart Parking Solution</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); }
@@ -13,6 +15,7 @@
         .hidden { display: none !important; }
         .page { display: none; }
         .page.active { display: block; }
+        #map { height: 500px; width: 100%; border-radius: 12px; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -102,7 +105,7 @@
         </div>
     </div>
 
-    <!-- User Home Page -->
+    <!-- User Home Page with Map -->
     <div id="homePage" class="page">
         <div class="min-h-screen bg-gray-50">
             <header class="bg-white shadow-sm">
@@ -118,28 +121,21 @@
             </header>
 
             <main class="max-w-7xl mx-auto px-4 py-8">
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome to ParkEase!</h2>
-                    <p class="text-gray-600 text-lg mb-8">Your smart parking solution is ready.</p>
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Find Parking Near You</h2>
+                    <p class="text-gray-600 mb-6">Click on markers to view parking details and book</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg">
-                            <h3 class="text-xl font-semibold text-blue-600 mb-2">Find Parking</h3>
-                            <p class="text-gray-600">Locate available parking spots near you</p>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg">
-                            <h3 class="text-xl font-semibold text-green-600 mb-2">Book Instantly</h3>
-                            <p class="text-gray-600">Reserve your spot with one click</p>
-                        </div>
-                        <div class="bg-purple-50 p-6 rounded-lg">
-                            <h3 class="text-xl font-semibold text-purple-600 mb-2">Pay Securely</h3>
-                            <p class="text-gray-600">Safe and secure payment options</p>
-                        </div>
-                    </div>
+                    <!-- Map -->
+                    <div id="map"></div>
+                </div>
 
-                    <div class="mt-8 p-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
-                        <h3 class="text-2xl font-bold mb-2">🎉 You're all set!</h3>
-                        <p class="text-lg">Your ParkEase account is active and ready to use.</p>
+                <!-- Parking Lots List -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Available Parking Lots</h3>
+                    <div id="parkingList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="text-center text-gray-500 py-8">
+                            <p>Loading parking lots...</p>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -162,32 +158,51 @@
             </header>
 
             <main class="max-w-7xl mx-auto px-4 py-8">
-                <div class="bg-white rounded-lg shadow-lg p-8">
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="bg-blue-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-blue-600 mb-2">Total Users</h3>
-                            <p class="text-3xl font-bold text-gray-800">3</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalUsers">-</p>
                         </div>
                         <div class="bg-green-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-green-600 mb-2">Parking Lots</h3>
-                            <p class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalLots">-</p>
                         </div>
                         <div class="bg-purple-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-purple-600 mb-2">Bookings</h3>
-                            <p class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalBookings">-</p>
                         </div>
                         <div class="bg-yellow-50 p-6 rounded-lg">
                             <h3 class="text-lg font-semibold text-yellow-600 mb-2">Revenue</h3>
-                            <p class="text-3xl font-bold text-gray-800">₹0</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalRevenue">₹0</p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="p-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
-                        <h3 class="text-2xl font-bold mb-2">👨‍💼 Admin Access Granted</h3>
-                        <p class="text-lg">You have full control over the ParkEase system.</p>
-                    </div>
+                <!-- Add Parking Lot Form -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Add New Parking Lot</h3>
+                    <form id="addParkingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="parkingName" placeholder="Parking Lot Name" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="parkingAddress" placeholder="Address" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" step="0.000001" id="parkingLat" placeholder="Latitude" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" step="0.000001" id="parkingLng" placeholder="Longitude" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" id="parkingSlots" placeholder="Total Slots" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" id="parkingPrice" placeholder="Price per Hour (₹)" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <textarea id="parkingDesc" placeholder="Description" rows="3"
+                            class="md:col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="md:col-span-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
+                            Add Parking Lot
+                        </button>
+                    </form>
                 </div>
             </main>
         </div>
@@ -196,6 +211,8 @@
     <script>
         const API_URL = window.location.origin + '/api';
         let currentUser = null;
+        let map = null;
+        let markers = [];
 
         // Check if already logged in
         function checkAuth() {
@@ -205,9 +222,12 @@
                 if (currentUser.userType === 'admin') {
                     showPage('adminPage');
                     document.getElementById('adminName').textContent = currentUser.name;
+                    loadAdminStats();
                 } else {
                     showPage('homePage');
                     document.getElementById('userName').textContent = currentUser.name;
+                    initMap();
+                    loadParkingLots();
                 }
             }
         }
@@ -237,6 +257,117 @@
             document.getElementById('adminForm').classList.remove('hidden');
         }
 
+        // Initialize Map
+        function initMap() {
+            if (map) return;
+            
+            map = L.map('map').setView([22.5726, 88.3639], 13); // Kolkata coordinates
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Try to get user location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 13);
+                    
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup('You are here')
+                        .openPopup();
+                });
+            }
+        }
+
+        // Load Parking Lots
+        async function loadParkingLots() {
+            try {
+                const res = await fetch(API_URL + '/parking');
+                const data = await res.json();
+                
+                if (data.success) {
+                    displayParkingLots(data.data);
+                    addMarkersToMap(data.data);
+                } else {
+                    document.getElementById('parkingList').innerHTML = '<p class="text-center text-gray-500">No parking lots available</p>';
+                }
+            } catch (err) {
+                console.error('Error loading parking lots:', err);
+                document.getElementById('parkingList').innerHTML = '<p class="text-center text-red-500">Error loading parking lots</p>';
+            }
+        }
+
+        // Display Parking Lots
+        function displayParkingLots(lots) {
+            const container = document.getElementById('parkingList');
+            
+            if (lots.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 col-span-3">No parking lots available yet</p>';
+                return;
+            }
+
+            container.innerHTML = lots.map(lot => `
+                <div class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">${lot.name}</h4>
+                    <p class="text-gray-600 mb-2">${lot.address}</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-green-600 font-semibold">${lot.availableSlots}/${lot.totalSlots} Available</span>
+                        <span class="text-blue-600 font-bold">₹${lot.pricePerHour}/hr</span>
+                    </div>
+                    <button onclick="bookParking('${lot._id}')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                        Book Now
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Add Markers to Map
+        function addMarkersToMap(lots) {
+            if (!map) return;
+            
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            lots.forEach(lot => {
+                const marker = L.marker([lot.location.coordinates[1], lot.location.coordinates[0]])
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="p-2">
+                            <h3 class="font-bold">${lot.name}</h3>
+                            <p class="text-sm">${lot.address}</p>
+                            <p class="text-green-600 font-semibold">${lot.availableSlots}/${lot.totalSlots} Available</p>
+                            <p class="text-blue-600 font-bold">₹${lot.pricePerHour}/hr</p>
+                            <button onclick="bookParking('${lot._id}')" class="mt-2 bg-blue-600 text-white px-4 py-1 rounded">Book</button>
+                        </div>
+                    `);
+                markers.push(marker);
+            });
+        }
+
+        // Book Parking
+        function bookParking(lotId) {
+            alert('Booking feature coming soon! Parking lot ID: ' + lotId);
+        }
+
+        // Load Admin Stats
+        async function loadAdminStats() {
+            try {
+                const res = await fetch(API_URL + '/parking');
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('totalLots').textContent = data.count;
+                    document.getElementById('totalUsers').textContent = '3'; // From database
+                    document.getElementById('totalBookings').textContent = '0';
+                }
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
         // User Login
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
@@ -257,6 +388,8 @@
                     currentUser = data.user;
                     document.getElementById('userName').textContent = currentUser.name;
                     showPage('homePage');
+                    initMap();
+                    loadParkingLots();
                 } else {
                     alert(data.message || 'Login failed');
                 }
@@ -287,6 +420,8 @@
                     currentUser = data.user;
                     document.getElementById('userName').textContent = currentUser.name;
                     showPage('homePage');
+                    initMap();
+                    loadParkingLots();
                 } else {
                     alert(data.message || 'Registration failed');
                 }
@@ -315,8 +450,43 @@
                     currentUser = data.user;
                     document.getElementById('adminName').textContent = currentUser.name;
                     showPage('adminPage');
+                    loadAdminStats();
                 } else {
                     alert(data.message || 'Invalid admin credentials');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
+            }
+        };
+
+        // Add Parking Lot (Admin)
+        document.getElementById('addParkingForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const parkingData = {
+                name: document.getElementById('parkingName').value,
+                address: document.getElementById('parkingAddress').value,
+                latitude: parseFloat(document.getElementById('parkingLat').value),
+                longitude: parseFloat(document.getElementById('parkingLng').value),
+                totalSlots: parseInt(document.getElementById('parkingSlots').value),
+                pricePerHour: parseFloat(document.getElementById('parkingPrice').value),
+                description: document.getElementById('parkingDesc').value
+            };
+
+            try {
+                const res = await fetch(API_URL + '/parking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(parkingData)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Parking lot added successfully!');
+                    document.getElementById('addParkingForm').reset();
+                    loadAdminStats();
+                } else {
+                    alert(data.message || 'Failed to add parking lot');
                 }
             } catch (err) {
                 alert('Network error. Please try again.');
@@ -338,6 +508,8 @@
                     currentUser = data.user;
                     document.getElementById('userName').textContent = currentUser.name;
                     showPage('homePage');
+                    initMap();
+                    loadParkingLots();
                 } else {
                     alert(data.message || 'Demo login failed');
                 }
@@ -351,6 +523,10 @@
             localStorage.removeItem('authToken');
             localStorage.removeItem('currentUser');
             currentUser = null;
+            if (map) {
+                map.remove();
+                map = null;
+            }
             showPage('loginPage');
             showLogin();
         }
