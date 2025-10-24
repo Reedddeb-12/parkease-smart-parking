@@ -94,6 +94,36 @@ app.post('/api/auth/admin-login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/admin-register', async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+    
+    const admin = new User({
+      name,
+      email,
+      password,
+      phone,
+      userType: 'admin'
+    });
+    
+    await admin.save();
+    
+    res.json({
+      success: true,
+      token: 'admin-token-' + admin._id,
+      user: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        initials: admin.initials,
+        userType: admin.userType
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 app.post('/api/auth/demo', async (req, res) => {
   try {
     let user = await User.findOne({ email: 'demo@parkease.com' });
