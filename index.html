@@ -11,24 +11,27 @@
         .gradient-bg { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); }
         .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
         .hidden { display: none !important; }
+        .page { display: none; }
+        .page.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="min-h-screen gradient-bg flex items-center justify-center p-6">
-        <div class="w-full max-w-sm">
-            <div class="text-center mb-12">
-                <div class="w-20 h-20 mx-auto mb-6 glass rounded-3xl flex items-center justify-center">
-                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/>
-                    </svg>
+<body class="bg-gray-50">
+    
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="min-h-screen gradient-bg flex items-center justify-center p-6">
+            <div class="w-full max-w-sm">
+                <div class="text-center mb-12">
+                    <div class="w-20 h-20 mx-auto mb-6 glass rounded-3xl flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-4xl font-bold text-white mb-3">ParkEase</h1>
+                    <p class="text-white/80 text-lg">Find it. Book it. Park it.</p>
                 </div>
-                <h1 class="text-4xl font-bold text-white mb-3">ParkEase</h1>
-                <p class="text-white/80 text-lg">Find it. Book it. Park it.</p>
-            </div>
 
-            <div class="glass rounded-3xl p-8">
-                <!-- User Login -->
-                <div id="userLoginForm">
+                <div class="glass rounded-3xl p-8">
                     <h3 class="text-xl font-semibold text-white mb-6 text-center">Sign In</h3>
                     <form id="loginForm" class="space-y-4">
                         <input type="email" id="loginEmail" placeholder="Email" required
@@ -39,200 +42,144 @@
                             Sign In
                         </button>
                     </form>
-                    <div class="mt-6 text-center space-y-2">
-                        <button id="showRegisterBtn" class="text-white/80 hover:text-white">Create Account</button>
-                        <span class="text-white/50 mx-2">|</span>
-                        <button id="adminLoginBtn" class="text-white/80 hover:text-white">Admin Login</button>
-                    </div>
                 </div>
 
-                <!-- Register Form -->
-                <div id="registerForm" class="hidden">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Create Account</h3>
-                    <form id="regForm" class="space-y-4">
-                        <input type="text" id="regName" placeholder="Full Name" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <input type="email" id="regEmail" placeholder="Email" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <input type="password" id="regPassword" placeholder="Password" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <input type="tel" id="regPhone" placeholder="Phone" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
-                            Create Account
-                        </button>
-                    </form>
-                    <div class="mt-4 text-center">
-                        <button id="backToLoginBtn" class="text-white/80 hover:text-white">← Back to Login</button>
-                    </div>
+                <div class="mt-8 text-center">
+                    <button onclick="demoLogin()" class="text-white/80 border border-white/30 px-6 py-2 rounded-full hover:bg-white/10">
+                        Try Demo
+                    </button>
                 </div>
-
-                <!-- Admin Login -->
-                <div id="adminForm" class="hidden">
-                    <h3 class="text-xl font-semibold text-white mb-6 text-center">Admin Login</h3>
-                    <form id="adminLoginForm" class="space-y-4">
-                        <input type="email" id="adminEmail" placeholder="Admin Email" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <input type="password" id="adminPassword" placeholder="Password" required
-                            class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
-                        <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
-                            Admin Sign In
-                        </button>
-                    </form>
-                    <div class="mt-4 text-center">
-                        <button id="backToUserLoginBtn" class="text-white/80 hover:text-white">← Back</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 text-center">
-                <button id="demoBtn" class="text-white/80 border border-white/30 px-6 py-2 rounded-full hover:bg-white/10">
-                    Try Demo
-                </button>
-                <div class="mt-4 text-white/40 text-xs">v2.0 - Fresh Build</div>
             </div>
         </div>
     </div>
 
+    <!-- Home Page -->
+    <div id="homePage" class="page">
+        <div class="min-h-screen bg-gray-50">
+            <!-- Header -->
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">ParkEase</h1>
+                    <div class="flex items-center gap-4">
+                        <span id="userName" class="text-gray-700"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome to ParkEase!</h2>
+                    <p class="text-gray-600 text-lg mb-8">Your smart parking solution is ready.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold text-blue-600 mb-2">Find Parking</h3>
+                            <p class="text-gray-600">Locate available parking spots near you</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold text-green-600 mb-2">Book Instantly</h3>
+                            <p class="text-gray-600">Reserve your spot with one click</p>
+                        </div>
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h3 class="text-xl font-semibold text-purple-600 mb-2">Pay Securely</h3>
+                            <p class="text-gray-600">Safe and secure payment options</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
+                        <h3 class="text-2xl font-bold mb-2">🎉 You're all set!</h3>
+                        <p class="text-lg">Your ParkEase account is active and ready to use.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
     <script>
-    // Log version for debugging
-    console.log('🚀 ParkEase v2.0 - Fresh Build Loaded');
-    console.log('📍 Location:', window.location.href);
-    
-    // Simple inline authentication - no external files
-    const API_URL = window.location.origin + '/api';
+        const API_URL = window.location.origin + '/api';
+        let currentUser = null;
 
-    // Check if already logged in
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        const user = JSON.parse(currentUser);
-        console.log('✅ User already logged in:', user.email);
-        window.location.href = user.userType === 'admin' ? 'admin.html' : 'home.html';
-    } else {
-        console.log('👤 No user logged in');
-    }
-
-    // Form switching
-    document.getElementById('showRegisterBtn').onclick = () => {
-        document.getElementById('userLoginForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.remove('hidden');
-    };
-
-    document.getElementById('adminLoginBtn').onclick = () => {
-        document.getElementById('userLoginForm').classList.add('hidden');
-        document.getElementById('adminForm').classList.remove('hidden');
-    };
-
-    document.getElementById('backToLoginBtn').onclick = () => {
-        document.getElementById('registerForm').classList.add('hidden');
-        document.getElementById('userLoginForm').classList.remove('hidden');
-    };
-
-    document.getElementById('backToUserLoginBtn').onclick = () => {
-        document.getElementById('adminForm').classList.add('hidden');
-        document.getElementById('userLoginForm').classList.remove('hidden');
-    };
-
-    // User Login
-    document.getElementById('loginForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-
-        try {
-            const res = await fetch(API_URL + '/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                window.location.href = 'home.html';
-            } else {
-                alert(data.message || 'Login failed');
+        // Check if already logged in
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                showPage('homePage');
+                document.getElementById('userName').textContent = currentUser.name;
             }
-        } catch (err) {
-            alert('Network error. Please try again.');
         }
-    };
 
-    // Register
-    document.getElementById('regForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('regName').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-        const phone = document.getElementById('regPhone').value;
+        // Show specific page
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
 
-        try {
-            const res = await fetch(API_URL + '/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, phone })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                window.location.href = 'home.html';
-            } else {
-                alert(data.message || 'Registration failed');
+        // Login
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch(API_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    document.getElementById('userName').textContent = currentUser.name;
+                    showPage('homePage');
+                } else {
+                    alert(data.message || 'Login failed');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
             }
-        } catch (err) {
-            alert('Network error. Please try again.');
-        }
-    };
+        };
 
-    // Admin Login
-    document.getElementById('adminLoginForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('adminEmail').value;
-        const password = document.getElementById('adminPassword').value;
-
-        try {
-            const res = await fetch(API_URL + '/auth/admin-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                window.location.href = 'admin.html';
-            } else {
-                alert(data.message || 'Invalid admin credentials');
+        // Demo Login
+        async function demoLogin() {
+            try {
+                const res = await fetch(API_URL + '/auth/demo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    document.getElementById('userName').textContent = currentUser.name;
+                    showPage('homePage');
+                } else {
+                    alert(data.message || 'Demo login failed');
+                }
+            } catch (err) {
+                alert('Network error. Please try again.');
             }
-        } catch (err) {
-            alert('Network error. Please try again.');
         }
-    };
 
-    // Demo Login
-    document.getElementById('demoBtn').onclick = async () => {
-        try {
-            const res = await fetch(API_URL + '/auth/demo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('currentUser', JSON.stringify(data.user));
-                window.location.href = 'home.html';
-            } else {
-                alert(data.message || 'Demo login failed');
-            }
-        } catch (err) {
-            alert('Network error. Please try again.');
+        // Logout
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            showPage('loginPage');
         }
-    };
+
+        // Initialize
+        checkAuth();
     </script>
 </body>
 </html>
