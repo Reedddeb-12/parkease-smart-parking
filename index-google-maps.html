@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkEase - Smart Parking with Google Maps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .hidden { display: none !important; }
+        .page { display: none; }
+        .page.active { display: block; }
+        #map { height: 500px; width: 100%; border-radius: 12px; }
+        #adminMap { height: 400px; width: 100%; border-radius: 12px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Login Page (keeping original) -->
+    <div id="loginPage" class="page active">
+        <div class="min-h-screen gradient-bg flex items-center justify-center p-6">
+            <div class="w-full max-w-sm">
+                <div class="text-center mb-12">
+                    <div class="w-20 h-20 mx-auto mb-6 glass rounded-3xl flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-4xl font-bold text-white mb-3">ParkEase</h1>
+                    <p class="text-white/80 text-lg">Find it. Book it. Park it.</p>
+                </div>
+
+                <div class="glass rounded-3xl p-8">
+                    <div id="userLoginForm">
+                        <h3 class="text-xl font-semibold text-white mb-6 text-center">Sign In</h3>
+                        <form id="loginForm" class="space-y-4">
+                            <input type="email" id="loginEmail" placeholder="Email" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <input type="password" id="loginPassword" placeholder="Password" required
+                                class="w-full px-4 py-3 glass rounded-2xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <button type="submit" class="w-full bg-white text-blue-600 py-3 rounded-2xl font-semibold hover:bg-white/90 transition-all">
+                                Sign In
+                            </button>
+                        </form>
+                        <div class="mt-6 text-center space-y-2">
+                            <button onclick="showRegister()" class="text-white/80 hover:text-white">Create Account</button>
+                            <span class="text-white/50 mx-2">|</span>
+                            <button onclick="showAdmin()" class="text-white/80 hover:text-white">Admin Login</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="demoLogin()" class="text-white/80 border border-white/30 px-6 py-2 rounded-full hover:bg-white/10">
+                        Try Demo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Home Page with Google Maps -->
+    <div id="homePage" class="page">
+        <div class="min-h-screen bg-gray-50">
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">🅿️ ParkEase</h1>
+                    <div class="flex items-center gap-4">
+                        <button onclick="findNearbyParking()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                            📍 Find Nearby
+                        </button>
+                        <span id="userName" class="text-gray-700"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">Find Parking Near You</h2>
+                            <p class="text-gray-600 mt-2">Click on markers to view details and book</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="searchAddress" placeholder="Search address..." 
+                                class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onclick="searchAddress()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Google Map -->
+                    <div id="map"></div>
+                </div>
+
+                <!-- Parking Lots List -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800">Available Parking Lots</h3>
+                        <select id="sortBy" onchange="sortParkingLots()" class="px-4 py-2 border rounded-lg">
+                            <option value="distance">Sort by Distance</option>
+                            <option value="price">Sort by Price</option>
+                            <option value="availability">Sort by Availability</option>
+                        </select>
+                    </div>
+                    <div id="parkingList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="text-center text-gray-500 py-8">
+                            <p>Loading parking lots...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (keeping original structure) -->
+    <div id="adminPage" class="page">
+        <div class="min-h-screen bg-gray-50">
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">ParkEase Admin</h1>
+                    <div class="flex items-center gap-4">
+                        <span id="adminName" class="text-gray-700"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-blue-600 mb-2">Total Users</h3>
+                            <p class="text-3xl font-bold text-gray-800" id="totalUsers">-</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-green-600 mb-2">Parking Lots</h3>
+                            <p class="text-3xl font-bold text-gray-800" id="totalLots">-</p>
+                        </div>
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-purple-600 mb-2">Bookings</h3>
+                            <p class="text-3xl font-bold text-gray-800" id="totalBookings">-</p>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-yellow-600 mb-2">Revenue</h3>
+                            <p class="text-3xl font-bold text-gray-800" id="totalRevenue">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Parking Lot Form with Google Maps -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Add New Parking Lot</h3>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-700 mb-3">📍 Click on map to set location</h4>
+                        <div id="adminMap"></div>
+                        <p class="text-sm text-gray-600 mt-2">Click anywhere on the map to set latitude and longitude</p>
+                    </div>
+
+                    <form id="addParkingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="parkingName" placeholder="Parking Lot Name" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="parkingAddress" placeholder="Address" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" step="0.000001" id="parkingLat" placeholder="Latitude (click map)" required readonly
+                            class="px-4 py-3 border rounded-lg bg-gray-50">
+                        <input type="number" step="0.000001" id="parkingLng" placeholder="Longitude (click map)" required readonly
+                            class="px-4 py-3 border rounded-lg bg-gray-50">
+                        <input type="number" id="parkingSlots" placeholder="Total Slots" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" id="parkingPrice" placeholder="Price per Hour (₹)" required
+                            class="px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <textarea id="parkingDesc" placeholder="Description" rows="3"
+                            class="md:col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="md:col-span-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
+                            Add Parking Lot
+                        </button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Load Google Maps API -->
+    <script>
+        // Replace with your actual Google Maps API key
+        const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+    <script src="/public/js/google-maps-helper.js"></script>
+    
+    <script>
+        const API_URL = window.location.origin + '/api';
+        let currentUser = null;
+        let mapsHelper = null;
+        let adminMapsHelper = null;
+        let allParkingLots = [];
+
+        // Initialize Google Maps Helper
+        function initMapsHelper() {
+            if (!mapsHelper) {
+                mapsHelper = new GoogleMapsHelper(GOOGLE_MAPS_API_KEY);
+            }
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                if (currentUser.userType === 'admin') {
+                    showPage('adminPage');
+                    document.getElementById('adminName').textContent = currentUser.name;
+                    loadAdminStats();
+                } else {
+                    showPage('homePage');
+                    document.getElementById('userName').textContent = currentUser.name;
+                    initMap();
+                    loadParkingLots();
+                }
+            }
+        }
+
+        // Show specific page
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Form switching functions
+        function showLogin() { /* ... */ }
+        function showRegister() { /* ... */ }
+        function showAdmin() { /* ... */ }
+
+        // Initialize Map
+        async function initMap() {
+            initMapsHelper();
+            mapsHelper.initMap('map');
+            
+            try {
+                const location = await mapsHelper.getUserLocation();
+                mapsHelper.addUserMarker(location);
+            } catch (error) {
+                console.log('Could not get user location:', error);
+            }
+        }
+
+        // Load Parking Lots
+        async function loadParkingLots() {
+            try {
+                const res = await fetch(API_URL + '/parking');
+                const data = await res.json();
+                
+                if (data.success) {
+                    allParkingLots = data.data;
+                    displayParkingLots(allParkingLots);
+                    mapsHelper.addParkingMarkers(allParkingLots);
+                    mapsHelper.fitBounds();
+                }
+            } catch (err) {
+                console.error('Error loading parking lots:', err);
+            }
+        }
+
+        // Find Nearby Parking
+        async function findNearbyParking() {
+            try {
+                const location = await mapsHelper.getUserLocation();
+                mapsHelper.addUserMarker(location);
+                
+                const nearbyLots = mapsHelper.findNearbyLots(allParkingLots, 5);
+                displayParkingLots(nearbyLots);
+                mapsHelper.addParkingMarkers(nearbyLots);
+                mapsHelper.fitBounds();
+                
+                alert(`Found ${nearbyLots.length} parking lots within 5km`);
+            } catch (error) {
+                alert('Could not get your location. Please enable location services.');
+            }
+        }
+
+        // Search Address
+        async function searchAddress() {
+            const address = document.getElementById('searchAddress').value;
+            if (!address) return;
+            
+            try {
+                const result = await mapsHelper.geocodeAddress(address);
+                mapsHelper.map.setCenter({ lat: result.lat, lng: result.lng });
+                mapsHelper.map.setZoom(15);
+                mapsHelper.addUserMarker({ lat: result.lat, lng: result.lng });
+            } catch (error) {
+                alert('Address not found');
+            }
+        }
+
+        // Display Parking Lots
+        function displayParkingLots(lots) {
+            const container = document.getElementById('parkingList');
+            
+            if (lots.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 col-span-3">No parking lots available</p>';
+                return;
+            }
+
+            container.innerHTML = lots.map(lot => {
+                const distance = lot.distance 
+                    ? `<p class="text-sm text-gray-600">📍 ${lot.distance < 1 ? Math.round(lot.distance * 1000) + 'm' : lot.distance.toFixed(1) + 'km'} away</p>`
+                    : '';
+                
+                return `
+                    <div class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">${lot.name}</h4>
+                        <p class="text-gray-600 mb-2">${lot.address}</p>
+                        ${distance}
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-green-600 font-semibold">${lot.availableSlots}/${lot.totalSlots} Available</span>
+                            <span class="text-blue-600 font-bold">₹${lot.pricePerHour}/hr</span>
+                        </div>
+                        <button onclick="bookParking('${lot._id}')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            Book Now
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Sort Parking Lots
+        function sortParkingLots() {
+            const sortBy = document.getElementById('sortBy').value;
+            let sorted = [...allParkingLots];
+            
+            if (sortBy === 'distance' && mapsHelper.userLocation) {
+                sorted = mapsHelper.findNearbyLots(allParkingLots, 100);
+            } else if (sortBy === 'price') {
+                sorted.sort((a, b) => a.pricePerHour - b.pricePerHour);
+            } else if (sortBy === 'availability') {
+                sorted.sort((a, b) => b.availableSlots - a.availableSlots);
+            }
+            
+            displayParkingLots(sorted);
+        }
+
+        // Book Parking
+        function bookParking(lotId) {
+            alert('Booking feature coming soon! Parking lot ID: ' + lotId);
+        }
+
+        // Admin Functions
+        function initAdminMap() {
+            if (!adminMapsHelper) {
+                adminMapsHelper = new GoogleMapsHelper(GOOGLE_MAPS_API_KEY);
+                adminMapsHelper.initMap('adminMap');
+                
+                adminMapsHelper.map.addListener('click', (e) => {
+                    document.getElementById('parkingLat').value = e.latLng.lat().toFixed(6);
+                    document.getElementById('parkingLng').value = e.latLng.lng().toFixed(6);
+                    
+                    if (adminMapsHelper.userMarker) {
+                        adminMapsHelper.userMarker.setMap(null);
+                    }
+                    
+                    adminMapsHelper.userMarker = new google.maps.Marker({
+                        position: e.latLng,
+                        map: adminMapsHelper.map,
+                        title: 'Selected Location'
+                    });
+                });
+            }
+        }
+
+        async function loadAdminStats() {
+            try {
+                const res = await fetch(API_URL + '/parking');
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('totalLots').textContent = data.count;
+                }
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+            
+            setTimeout(() => initAdminMap(), 100);
+        }
+
+        // Demo Login
+        async function demoLogin() {
+            try {
+                const res = await fetch(API_URL + '/auth/demo', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    currentUser = data.user;
+                    document.getElementById('userName').textContent = currentUser.name;
+                    showPage('homePage');
+                    initMap();
+                    loadParkingLots();
+                }
+            } catch (err) {
+                alert('Demo login failed');
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // Initialize on load
+        checkAuth();
+    </script>
+</body>
+</html>

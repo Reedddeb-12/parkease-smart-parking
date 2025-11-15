@@ -161,6 +161,10 @@ app.post('/api/auth/demo', async (req, res) => {
   }
 });
 
+// Auth Routes (Forgot Password)
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
 // Parking Routes
 app.get('/api/parking', async (req, res) => {
   try {
@@ -170,6 +174,10 @@ app.get('/api/parking', async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 });
+
+// Nearby parking search routes
+const parkingNearbyRoutes = require('./routes/parking-nearby');
+app.use('/api/parking', parkingNearbyRoutes);
 
 app.post('/api/parking', async (req, res) => {
   try {

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkEase - Map Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .map-container { height: 500px; border-radius: 12px; overflow: hidden; }
+        .active-tab { background: #3B82F6; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <h1 class="text-3xl font-bold text-blue-600">🅿️ ParkEase - Map Comparison</h1>
+                <p class="text-gray-600 mt-2">Compare Google Maps vs Leaflet (OpenStreetMap)</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex gap-4 mb-6">
+                    <button onclick="showMap('google')" id="googleTab" 
+                        class="active-tab px-6 py-3 rounded-lg font-semibold transition-all">
+                        🗺️ Google Maps
+                    </button>
+                    <button onclick="showMap('leaflet')" id="leafletTab"
+                        class="px-6 py-3 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 transition-all">
+                        🍃 Leaflet (OpenStreetMap)
+                    </button>
+                </div>
+
+                <!-- Google Maps Container -->
+                <div id="googleMapContainer" class="map-section">
+                    <div class="mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Google Maps</h2>
+                        <div class="flex gap-4 mb-4">
+                            <span class="text-green-600">✅ Built-in geocoding</span>
+                            <span class="text-green-600">✅ Directions API</span>
+                            <span class="text-green-600">✅ Places search</span>
+                            <span class="text-yellow-600">⚠️ Requires API key</span>
+                        </div>
+                    </div>
+                    <div id="googleMap" class="map-container bg-gray-200 flex items-center justify-center">
+                        <div class="text-center p-8">
+                            <p class="text-xl font-semibold text-gray-700 mb-4">Google Maps Not Configured</p>
+                            <p class="text-gray-600 mb-4">To use Google Maps, you need to:</p>
+                            <ol class="text-left text-gray-600 space-y-2 max-w-md mx-auto">
+                                <li>1. Get API key from Google Cloud Console</li>
+                                <li>2. Enable Maps JavaScript API</li>
+                                <li>3. Update the API key in this file</li>
+                            </ol>
+                            <a href="./QUICK_START_GOOGLE_MAPS.md" 
+                                class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                                View Setup Guide
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaflet Map Container -->
+                <div id="leafletMapContainer" class="map-section hidden">
+                    <div class="mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Leaflet (OpenStreetMap)</h2>
+                        <div class="flex gap-4 mb-4">
+                            <span class="text-green-600">✅ Free & open source</span>
+                            <span class="text-green-600">✅ No API key needed</span>
+                            <span class="text-green-600">✅ Unlimited usage</span>
+                            <span class="text-yellow-600">⚠️ Limited features</span>
+                        </div>
+                    </div>
+                    <div id="leafletMap" class="map-container"></div>
+                </div>
+            </div>
+
+            <!-- Feature Comparison -->
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Feature Comparison</h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2">
+                                <th class="text-left py-3 px-4">Feature</th>
+                                <th class="text-center py-3 px-4">Google Maps</th>
+                                <th class="text-center py-3 px-4">Leaflet</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Cost</td>
+                                <td class="text-center py-3 px-4">$200/month free tier</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Free</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">API Key Required</td>
+                                <td class="text-center py-3 px-4">✅ Yes</td>
+                                <td class="text-center py-3 px-4 text-green-600">❌ No</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Geocoding</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Built-in</td>
+                                <td class="text-center py-3 px-4">❌ Requires 3rd party</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Directions</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Built-in</td>
+                                <td class="text-center py-3 px-4">❌ Requires 3rd party</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Places Search</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Built-in</td>
+                                <td class="text-center py-3 px-4">❌ Not available</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Customization</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Extensive</td>
+                                <td class="text-center py-3 px-4">✅ Good</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Performance</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Excellent</td>
+                                <td class="text-center py-3 px-4">✅ Good</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Offline Support</td>
+                                <td class="text-center py-3 px-4">❌ Limited</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Better</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-3 px-4 font-semibold">Usage Limits</td>
+                                <td class="text-center py-3 px-4">~28,000 loads/month</td>
+                                <td class="text-center py-3 px-4 text-green-600">✅ Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-semibold">Best For</td>
+                                <td class="text-center py-3 px-4">Production apps with budget</td>
+                                <td class="text-center py-3 px-4">Free/open-source projects</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h4 class="text-xl font-bold text-blue-800 mb-3">Choose Google Maps If:</h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>✅ You need built-in geocoding and directions</li>
+                        <li>✅ You want the best user experience</li>
+                        <li>✅ You have budget for API costs</li>
+                        <li>✅ You need places search functionality</li>
+                        <li>✅ Your app is commercial/production</li>
+                    </ul>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-6">
+                    <h4 class="text-xl font-bold text-green-800 mb-3">Choose Leaflet If:</h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>✅ You want completely free solution</li>
+                        <li>✅ You prefer open-source software</li>
+                        <li>✅ You don't need advanced features</li>
+                        <li>✅ You want unlimited usage</li>
+                        <li>✅ Your app is personal/educational</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="bg-white rounded-lg shadow-lg p-8 mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Quick Links</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="./index-google-maps.html" 
+                        class="block p-4 border-2 border-blue-500 rounded-lg hover:bg-blue-50 transition-all">
+                        <h4 class="font-bold text-blue-600 mb-2">🗺️ Google Maps Version</h4>
+                        <p class="text-sm text-gray-600">Full app with Google Maps</p>
+                    </a>
+                    <a href="./index.html" 
+                        class="block p-4 border-2 border-green-500 rounded-lg hover:bg-green-50 transition-all">
+                        <h4 class="font-bold text-green-600 mb-2">🍃 Leaflet Version</h4>
+                        <p class="text-sm text-gray-600">Original app with Leaflet</p>
+                    </a>
+                    <a href="./QUICK_START_GOOGLE_MAPS.md" 
+                        class="block p-4 border-2 border-purple-500 rounded-lg hover:bg-purple-50 transition-all">
+                        <h4 class="font-bold text-purple-600 mb-2">📚 Setup Guide</h4>
+                        <p class="text-sm text-gray-600">5-minute quick start</p>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Load Google Maps (replace with your API key) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+
+    <script>
+        let leafletMap = null;
+        let googleMap = null;
+
+        // Show selected map
+        function showMap(type) {
+            const googleContainer = document.getElementById('googleMapContainer');
+            const leafletContainer = document.getElementById('leafletMapContainer');
+            const googleTab = document.getElementById('googleTab');
+            const leafletTab = document.getElementById('leafletTab');
+
+            if (type === 'google') {
+                googleContainer.classList.remove('hidden');
+                leafletContainer.classList.add('hidden');
+                googleTab.classList.add('active-tab');
+                googleTab.classList.remove('bg-gray-200');
+                leafletTab.classList.remove('active-tab');
+                leafletTab.classList.add('bg-gray-200');
+                
+                if (!googleMap) {
+                    initGoogleMap();
+                }
+            } else {
+                leafletContainer.classList.remove('hidden');
+                googleContainer.classList.add('hidden');
+                leafletTab.classList.add('active-tab');
+                leafletTab.classList.remove('bg-gray-200');
+                googleTab.classList.remove('active-tab');
+                googleTab.classList.add('bg-gray-200');
+                
+                if (!leafletMap) {
+                    initLeafletMap();
+                }
+            }
+        }
+
+        // Initialize Leaflet Map
+        function initLeafletMap() {
+            leafletMap = L.map('leafletMap').setView([22.5726, 88.3639], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(leafletMap);
+
+            // Add sample marker
+            L.marker([22.5726, 88.3639])
+                .addTo(leafletMap)
+                .bindPopup('<b>Sample Parking Lot</b><br>City Center Parking')
+                .openPopup();
+        }
+
+        // Initialize Google Map
+        function initGoogleMap() {
+            try {
+                googleMap = new google.maps.Map(document.getElementById('googleMap'), {
+                    center: { lat: 22.5726, lng: 88.3639 },
+                    zoom: 13
+                });
+
+                // Add sample marker
+                new google.maps.Marker({
+                    position: { lat: 22.5726, lng: 88.3639 },
+                    map: googleMap,
+                    title: 'Sample Parking Lot'
+                });
+            } catch (error) {
+                console.error('Google Maps not loaded:', error);
+            }
+        }
+
+        // Initialize Leaflet by default
+        setTimeout(() => initLeafletMap(), 100);
+    </script>
+</body>
+</html>

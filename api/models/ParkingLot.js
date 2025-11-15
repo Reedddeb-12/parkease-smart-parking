@@ -205,4 +205,4 @@ parkingLotSchema.statics.findNearby = function(longitude, latitude, maxDistance 
   ]);
 };
 
-module.exports = mongoose.model('ParkingLot', parkingLotSchema);
+module.exports = mongoose.models.ParkingLot || mongoose.model('ParkingLot', parkingLotSchema);

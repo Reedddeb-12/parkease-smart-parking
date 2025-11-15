@@ -124,4 +124,4 @@ parkingLotSchema.methods.updateAvailableSlots = function() {
   return this.save();
 };
 
-module.exports = mongoose.model('ParkingLot', parkingLotSchema);
+module.exports = mongoose.models.ParkingLot || mongoose.model('ParkingLot', parkingLotSchema);
