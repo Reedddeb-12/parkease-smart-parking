@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Forgot Password Test</title>
+</head>
+<body>
+    <h1>Simple Forgot Password Test</h1>
+    <input type="email" id="email" value="reeddhijit2005@gmail.com">
+    <button onclick="testForgot()">Test Forgot Password</button>
+    <div id="result"></div>
+
+    <script>
+        async function testForgot() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Sending...';
+            
+            try {
+                const url = 'http://localhost:8888/api/auth/forgot-password';
+                console.log('URL:', url);
+                console.log('Email:', email);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                console.log('Status:', response.status);
+                console.log('OK:', response.ok);
+                
+                const text = await response.text();
+                console.log('Raw response:', text);
+                
+                const data = JSON.parse(text);
+                console.log('Parsed data:', data);
+                
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+            } catch (error) {
+                console.error('ERROR:', error);
+                resultDiv.innerHTML = 'ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
