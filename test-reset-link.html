@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Reset Password Link</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-2xl font-bold mb-6">Test Reset Password Flow</h1>
+        
+        <!-- Step 1: Request Reset -->
+        <div class="mb-8 p-4 border rounded">
+            <h2 class="text-xl font-semibold mb-4">Step 1: Request Password Reset</h2>
+            <input type="email" id="testEmail" value="demo@parkease.com" 
+                class="w-full px-4 py-2 border rounded mb-2">
+            <button onclick="requestReset()" 
+                class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                Send Reset Request
+            </button>
+            <div id="resetResult" class="mt-4"></div>
+        </div>
+
+        <!-- Step 2: Test Reset Link -->
+        <div class="mb-8 p-4 border rounded">
+            <h2 class="text-xl font-semibold mb-4">Step 2: Test Reset Link</h2>
+            <input type="text" id="resetToken" placeholder="Paste token here" 
+                class="w-full px-4 py-2 border rounded mb-2">
+            <button onclick="testResetLink()" 
+                class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                Test Reset Link
+            </button>
+            <div id="linkResult" class="mt-4"></div>
+        </div>
+
+        <!-- Step 3: Reset Password -->
+        <div class="mb-8 p-4 border rounded">
+            <h2 class="text-xl font-semibold mb-4">Step 3: Reset Password</h2>
+            <input type="password" id="newPassword" placeholder="New password" 
+                class="w-full px-4 py-2 border rounded mb-2">
+            <button onclick="resetPassword()" 
+                class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">
+                Reset Password
+            </button>
+            <div id="passwordResult" class="mt-4"></div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="p-4 bg-gray-900 text-green-400 rounded font-mono text-sm">
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8888/api';
+        let currentToken = null;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-blue-400';
+            console.innerHTML += `<div class="${color}">[${new Date().toLocaleTimeString()}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        async function requestReset() {
+            const email = document.getElementById('testEmail').value;
+            const resultDiv = document.getElementById('resetResult');
+            
+            log(`Requesting reset for: ${email}`);
+            
+            try {
+                const response = await fetch(API_URL + '/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+                log(`Response: ${JSON.stringify(data)}`, 'success');
+
+                if (data.resetUrl) {
+                    const url = new URL(data.resetUrl);
+                    currentToken = url.searchParams.get('token');
+                    document.getElementById('resetToken').value = currentToken;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                            <p class="font-bold">✅ Reset link generated!</p>
+                            <p class="text-sm mt-2">Token: ${currentToken.substring(0, 20)}...</p>
+                            <a href="${data.resetUrl}" target="_blank" 
+                                class="text-blue-600 underline block mt-2">
+                                Open Reset Page →
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <p>❌ Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testResetLink() {
+            const token = document.getElementById('resetToken').value;
+            const resultDiv = document.getElementById('linkResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p class="text-red-600">Please enter a token</p>';
+                return;
+            }
+
+            log(`Testing token: ${token.substring(0, 20)}...`);
+            
+            try {
+                const response = await fetch(API_URL + '/auth/verify-reset-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+                log(`Verification: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    currentToken = token;
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                            <p class="font-bold">✅ Token is valid!</p>
+                            <p class="text-sm mt-2">Email: ${data.email}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <p>❌ ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <p>❌ Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function resetPassword() {
+            const token = document.getElementById('resetToken').value || currentToken;
+            const newPassword = document.getElementById('newPassword').value;
+            const resultDiv = document.getElementById('passwordResult');
+            
+            if (!token || !newPassword) {
+                resultDiv.innerHTML = '<p class="text-red-600">Please enter token and password</p>';
+                return;
+            }
+
+            log(`Resetting password with token: ${token.substring(0, 20)}...`);
+            
+            try {
+                const response = await fetch(API_URL + '/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, newPassword })
+                });
+
+                const data = await response.json();
+                log(`Reset result: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                            <p class="font-bold">✅ Password reset successful!</p>
+                            <p class="text-sm mt-2">${data.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <p>❌ ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <p>❌ Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        log('Test page loaded. Server: ' + API_URL);
+    </script>
+</body>
+</html>
