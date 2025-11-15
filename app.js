@@ -165,6 +165,15 @@ app.post('/api/auth/demo', async (req, res) => {
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+// Test endpoint for debugging
+app.get('/api/test-auth', (req, res) => {
+  res.json({
+    message: 'Auth routes are loaded',
+    hasUserModel: !!User,
+    mongooseConnected: mongoose.connection.readyState === 1
+  });
+});
+
 // Parking Routes
 app.get('/api/parking', async (req, res) => {
   try {
@@ -236,7 +245,15 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    env: {
+      nodeEnv: process.env.NODE_ENV,
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      hasEmailUser: !!process.env.EMAIL_USER,
+      hasEmailPass: !!process.env.EMAIL_PASS,
+      frontendUrl: process.env.FRONTEND_URL
+    }
   });
 });
 
