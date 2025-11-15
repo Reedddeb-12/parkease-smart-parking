@@ -14,7 +14,9 @@ const resetTokens = new Map();
  */
 router.post('/forgot-password', async (req, res) => {
   try {
+    console.log('Forgot password request received');
     const { email } = req.body;
+    console.log('Email:', email);
 
     if (!email) {
       return res.status(400).json({
@@ -24,7 +26,9 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     // Find user
+    console.log('Searching for user...');
     const user = await User.findOne({ email });
+    console.log('User found:', user ? 'YES' : 'NO');
 
     if (!user) {
       // Don't reveal if user exists or not (security)
@@ -49,11 +53,18 @@ router.post('/forgot-password', async (req, res) => {
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:8888'}/reset-password.html?token=${resetToken}`;
 
     // Send email
-    const emailResult = await emailService.sendPasswordResetEmail(
-      user.email,
-      resetUrl,
-      user.name
-    );
+    let emailResult;
+    try {
+      emailResult = await emailService.sendPasswordResetEmail(
+        user.email,
+        resetUrl,
+        user.name
+      );
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      // Continue even if email fails
+      emailResult = { mode: 'error', error: emailError.message };
+    }
 
     // Log to console for development
     console.log('\n='.repeat(70));
@@ -79,9 +90,14 @@ router.post('/forgot-password', async (req, res) => {
 
   } catch (error) {
     console.error('Forgot password error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error. Please try again later.'
+      message: 'Server error. Please try again later.',
+      ...(process.env.NODE_ENV === 'development' && { 
+        error: error.message,
+        stack: error.stack
+      })
     });
   }
 });
