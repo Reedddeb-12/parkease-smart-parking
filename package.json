@@ -7,6 +7,8 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "setup-email": "node setup-email.js",
+    "setup-mongodb": "node setup-mongodb.js",
+    "test-mongodb": "node test-mongodb.js",
     "generate-secrets": "node generate-secrets.js",
     "security-check": "node generate-secrets.js",
     "build": "echo 'Static files ready'",
