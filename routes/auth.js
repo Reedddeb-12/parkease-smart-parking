@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const User = require('../api/models/User');
+const emailService = require('../services/emailService');
 
 // Store reset tokens in memory (in production, use Redis or database)
 const resetTokens = new Map();
@@ -44,24 +45,36 @@ router.post('/forgot-password', async (req, res) => {
       expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
     });
 
-    // In production, send email here
-    // For now, we'll return the token in response (for testing)
-    const resetUrl = `http://localhost:8888/reset-password.html?token=${resetToken}`;
+    // Generate reset URL
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:8888'}/reset-password.html?token=${resetToken}`;
 
-    console.log('\n='.repeat(60));
+    // Send email
+    const emailResult = await emailService.sendPasswordResetEmail(
+      user.email,
+      resetUrl,
+      user.name
+    );
+
+    // Log to console for development
+    console.log('\n='.repeat(70));
     console.log('🔐 PASSWORD RESET REQUEST');
-    console.log('='.repeat(60));
+    console.log('='.repeat(70));
     console.log(`Email: ${email}`);
+    console.log(`Name: ${user.name}`);
     console.log(`Reset Link: ${resetUrl}`);
     console.log(`Token expires in: 10 minutes`);
-    console.log('='.repeat(60) + '\n');
+    console.log(`Email Status: ${emailResult.mode === 'email' ? '✅ Sent' : '⚠️  Console Mode'}`);
+    console.log('='.repeat(70) + '\n');
 
     res.json({
       success: true,
-      message: 'Password reset link has been sent to your email.',
-      // Remove this in production!
-      resetUrl: resetUrl,
-      devNote: 'In production, this would be sent via email'
+      message: 'If an account exists with this email, you will receive a password reset link.',
+      emailSent: emailResult.mode === 'email',
+      // Include reset URL in development mode only
+      ...(process.env.NODE_ENV === 'development' && { 
+        resetUrl: resetUrl,
+        devNote: 'Reset link shown in development mode'
+      })
     });
 
   } catch (error) {
