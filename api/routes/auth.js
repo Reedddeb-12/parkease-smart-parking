@@ -7,7 +7,10 @@ const router = express.Router();
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback-secret', {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured. Please set it in .env file');
+  }
+  return jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d'
   });
 };
@@ -252,14 +255,25 @@ router.post('/change-password', auth, async (req, res) => {
 // @access  Public
 router.post('/demo', async (req, res) => {
   try {
+    // Check if demo mode is enabled
+    if (process.env.NODE_ENV === 'production' && !process.env.ENABLE_DEMO) {
+      return res.status(403).json({
+        success: false,
+        message: 'Demo mode is disabled in production'
+      });
+    }
+
     // Create or find demo user
     let demoUser = await User.findOne({ email: 'demo@parkease.com' });
     
     if (!demoUser) {
+      // Use environment variable for demo password
+      const demoPassword = process.env.DEMO_PASSWORD || 'ChangeThisPassword123!';
+      
       demoUser = new User({
         name: 'Demo User',
         email: 'demo@parkease.com',
-        password: 'demo123',
+        password: demoPassword,
         phone: '+1234567890',
         userType: 'user'
       });
